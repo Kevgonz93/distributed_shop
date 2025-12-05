@@ -24,7 +24,7 @@ Incluye:
 
 ## 🧱 Arquitectura General
 
-![Arquitectura Microservicios](/distributed_shop/docs/architecture.png)
+![Arquitectura Microservicios](docs/architecture.png)
 
 Principios clave:
 	•	**Database per Service**: cada microservicio tiene su propia base de datos.
