@@ -1,0 +1,27 @@
+@startuml
+title ft_distributed_shop - Arquitectura de Microservicios
+
+node "API Gateway" as Gateway {
+}
+
+node "Inventory Service" as Inventory {
+}
+
+node "Order Service" as Orders {
+}
+
+queue "RabbitMQ" as MQ
+
+database "Postgres A (Inventory DB)" as PGInv
+database "Postgres B (Orders DB)" as PGOrd
+
+Gateway --> Inventory : HTTP (sync) Consultar productos
+Gateway --> Orders : HTTP (sync) Crear pedido
+
+Orders --> MQ : Evento ORDER_CREATED
+MQ --> Inventory : Consumir ORDER_CREATED Actualizar stock
+
+Inventory --> PGInv : CRUD Productos/Stock
+Orders --> PGOrd : CRUD Pedidos
+
+@enduml
