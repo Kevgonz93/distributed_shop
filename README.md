@@ -1,4 +1,5 @@
 # 🟣 distributed_shop — Micro-Ecommerce Distribuido
+
 > _"Divide y vencerás: Arquitectura de Microservicios"_
 
 Este proyecto implementa un **sistema distribuido de e-commerce**, inspirado en arquitecturas reales de backend modernas.  
@@ -84,7 +85,6 @@ distributed_shop/
 ```bash
 git clone https://github.com/Kevgonz93/distributed_shop.git
 cd distributed_shop
-
 docker-compose up --build
 ```
 
@@ -99,7 +99,7 @@ Servicios esperados:
 
 ---
 
-## Endpoints
+## 🧪 Endpoints
 
 > Nota: Estos endpoints pertenecen al API Gateway y representan el flujo base del sistema. Cada microservicio expone sus propias rutas internas no accesibles desde el exterior.
 
