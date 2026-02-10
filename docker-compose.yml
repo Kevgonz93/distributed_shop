@@ -1,27 +1,129 @@
-# version: '3.8'
+# version: "3.9"
 
 services:
+  # 🟢 API GATEWAY (puerto 3000)
   api-gateway:
-    build:
-      context: ./api-gateway
+    build: ./api-gateway
     container_name: api-gateway
+    restart: unless-stopped
     ports:
       - "3000:3000"
     depends_on:
-      - inventory-service
+      orders-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      # Ajusta estas variables a tu config real
+      NODE_ENV: development
+      ORDERS_SERVICE_URL: http://orders-service:3002
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     networks:
-      - app-network
+      - distributed_net
 
+  # 🟡 INVENTORY SERVICE (puerto 3001)
   inventory-service:
-    build:
-      context: ./inventory-service
+    build: ./inventory-service
     container_name: inventory-service
+    restart: unless-stopped
     ports:
       - "3001:3001"
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://inventory_user:inventory_pass@inventory-db:5432/inventory_db
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     networks:
-      - app-network
+      - distributed_net
+
+  # 🔵 ORDERS SERVICE (puerto 3002)
+  orders-service:
+    build: ./orders-service
+    container_name: orders-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    depends_on:
+      orders-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://orders_user:orders_pass@orders-db:5432/orders_db
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    networks:
+      - distributed_net
+
+  # 🗃️ INVENTORY DB (Postgres A)
+  inventory-db:
+    image: postgres:16
+    container_name: inventory-db
+    restart: always
+    environment:
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+      POSTGRES_DB: inventory_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventory_user -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5433:5432"  # opcional exponerlo fuera
+    volumes:
+      - inventory_data:/var/lib/postgresql/data
+    networks:
+      - distributed_net
+
+  # 🗃️ ORDERS DB (Postgres B)
+  orders-db:
+    image: postgres:16
+    container_name: orders-db
+    restart: always
+    environment:
+      POSTGRES_USER: orders_user
+      POSTGRES_PASSWORD: orders_pass
+      POSTGRES_DB: orders_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders_user -d orders_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5434:5432"  # opcional exponerlo fuera
+    volumes:
+      - orders_data:/var/lib/postgresql/data
+    networks:
+      - distributed_net
+
+  # 🐰 RABBITMQ (message broker)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"     # Puerto AMQP (para NestJS)
+      - "15672:15672"   # Panel web de RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - distributed_net
 
 networks:
-  app-network:
+  distributed_net:
     driver: bridge
-                                                                 
+
+volumes:
+  inventory_data:
+  orders_data:
