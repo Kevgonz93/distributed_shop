@@ -12,6 +12,7 @@ module.exports = {
     '!app.module.ts',
     '!*/*.module.ts',
     '!products/dto/*.ts',
+    '!orders/dto/*.ts',
   ],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',

@@ -18,7 +18,7 @@ export class OrdersService {
   ] as const;
 
   constructor(private readonly httpService: HttpService) {
-    console.log('ORDERS baseUrl:', this.baseUrl);
+    // console.log('ORDERS baseUrl:', this.baseUrl);
   }
 
   private handleAxiosError(error: AxiosError, fallbackMessage: string) {
@@ -28,7 +28,6 @@ export class OrdersService {
         error.response.status,
       );
     }
-
     throw new HttpException(
       'Order service unavailable',
       HttpStatus.SERVICE_UNAVAILABLE,

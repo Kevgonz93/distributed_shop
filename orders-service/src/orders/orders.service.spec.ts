@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
-import { ClientProxy } from '@nestjs/microservices';
 import { CreateOrderDto } from './dto/createDto';
 import { Order } from './ordersModel';
 
@@ -67,7 +66,6 @@ describe('OrdersService', () => {
     it('should return an empty array if no orders match the status', () => {
       const status = 'nonexistent-status';
       const orders = ordersService.getOrdersByStatus(status);
-      
     });
   });
 
